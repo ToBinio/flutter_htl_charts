@@ -38,6 +38,7 @@ class _RoomSelectorState extends State<RoomSelector> {
             controller: schoolController,
             requestFocusOnTap: true,
             label: const Text("Schule"),
+            width: 150,
             onSelected: (School? school) async {
               if (selectedSchool == school) {
                 return;
@@ -71,6 +72,7 @@ class _RoomSelectorState extends State<RoomSelector> {
               controller: branchController,
               requestFocusOnTap: true,
               label: const Text("Abteilung"),
+              width: 150,
               onSelected: (Branch? branch) async {
                 if (selectedBranch == branch) {
                   return;
@@ -101,6 +103,7 @@ class _RoomSelectorState extends State<RoomSelector> {
               controller: roomController,
               requestFocusOnTap: true,
               label: const Text("Raum"),
+              width: 150,
               onSelected: (Room? room) async {
                 selectedRoom = room;
                 await room!.fetchData(context);

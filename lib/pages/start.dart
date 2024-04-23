@@ -24,7 +24,11 @@ class Start extends StatefulWidget {
 }
 
 class _StartState extends State<Start> {
-  List<Room?> selectedRooms = [null, null];
+  List<Room?> selectedRooms = [null];
+
+  bool showTemp = true;
+  bool showCo2 = true;
+  bool showHum = true;
 
   @override
   void initState() {
@@ -44,12 +48,61 @@ class _StartState extends State<Start> {
         body: ListView(
           children: [
             for (int i = 0; i < selectedRooms.length; i++)
-              RoomSelector(callback: (room) {
-                selectedRooms[i] = room;
-                setState(() {});
-              }),
-            RoomChart(rooms: selectedRooms)
+              Row(
+                children: [
+                  RoomSelector(callback: (room) {
+                    selectedRooms[i] = room;
+                    setState(() {});
+                  }),
+                  if (i != 0)
+                    IconButton(
+                        onPressed: () => onRemoveRoom(i),
+                        icon: const Icon(Icons.remove))
+                ],
+              ),
+            IconButton(onPressed: onAddRoom, icon: const Icon(Icons.add)),
+            Row(
+              children: [
+                const Text("Temperatur"),
+                Checkbox(
+                  value: showTemp,
+                  onChanged: (value) => setState(() {
+                    showTemp = value!;
+                  }),
+                ),
+                const Text("CO2"),
+                Checkbox(
+                  value: showCo2,
+                  onChanged: (value) => setState(() {
+                    showCo2 = value!;
+                  }),
+                ),
+                const Text("Humidity"),
+                Checkbox(
+                  value: showHum,
+                  onChanged: (value) => setState(() {
+                    showHum = value!;
+                  }),
+                )
+              ],
+            ),
+            RoomChart(
+              rooms: selectedRooms,
+              showTemp: showTemp,
+              showCo2: showCo2,
+              showHum: showHum,
+            )
           ],
         ));
+  }
+
+  void onAddRoom() {
+    selectedRooms.add(null);
+    setState(() {});
+  }
+
+  void onRemoveRoom(int id) {
+    selectedRooms.removeAt(id);
+    setState(() {});
   }
 }
