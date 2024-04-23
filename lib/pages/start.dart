@@ -1,11 +1,15 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_htl_charts/provider/schoolsProvider.dart';
+import 'package:flutter_htl_charts/widgets/roomChart.dart';
+import 'package:flutter_htl_charts/widgets/roomSelector.dart';
 import 'package:http/http.dart';
 import 'package:provider/provider.dart';
-import '../provider/pathProvider.dart';
+import '../domain/room.dart';
+import '../provider/selectedRoomsProvider.dart';
 import '../provider/urlProvider.dart';
-import '../utility/sensorData.dart';
+import '../domain/sensorData.dart';
 
 /*
 Link to DB
@@ -20,14 +24,13 @@ class Start extends StatefulWidget {
 }
 
 class _StartState extends State<Start> {
-  TextEditingController dbUrl = TextEditingController();
-  List<String> rooms = [];
+  List<Room?> selectedRooms = [null, null];
 
   @override
   void initState() {
-    var urlProver = Provider.of<UrlProvider>(context, listen: false);
+    var schoolsProver = Provider.of<SchoolsProvider>(context, listen: false);
 
-    dbUrl.text = urlProver.url;
+    schoolsProver.loadData(context);
 
     super.initState();
   }
@@ -40,87 +43,13 @@ class _StartState extends State<Start> {
         ),
         body: ListView(
           children: [
-            TextFormField(
-              decoration: const InputDecoration(labelText: "db url"),
-              controller: dbUrl,
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter some text';
-                }
-                return null;
-              },
-              onChanged: (value) {
-                var urlProver =
-                    Provider.of<UrlProvider>(context, listen: false);
-                urlProver.url = value;
-              },
-            ),
-            TextButton(onPressed: onLoadRooms, child: const Text("Load rooms")),
-            if (rooms.isNotEmpty) roomSelect(),
-            if (rooms.isNotEmpty)
-              TextButton(
-                  onPressed: () async {
-                    var roomProvider =
-                        Provider.of<PathProvider>(context, listen: false);
-
-                    await roomProvider.loadData(context);
-                    Navigator.pushNamed(context, "/graph");
-                  },
-                  child: const Text("Show Graph"))
+            for (int i = 0; i < selectedRooms.length; i++)
+              RoomSelector(callback: (room) {
+                selectedRooms[i] = room;
+                setState(() {});
+              }),
+            RoomChart(rooms: selectedRooms)
           ],
         ));
-  }
-
-  void onLoadRooms() async {
-    try {
-      rooms = await SensorData.readOnlyAllRooms("${dbUrl.text}.json");
-    } catch (e) {
-      showErrorDialog();
-      return;
-    }
-    setRoom(rooms.first);
-
-    setState(() {});
-  }
-
-  void showErrorDialog() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) => AlertDialog(
-        title: const Text('Invalid Url'),
-        content: const Text("that was simple not correct..."),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('ok ~_~'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void setRoom(String room) {
-    var roomProvider = Provider.of<PathProvider>(context, listen: false);
-    roomProvider.room = room;
-  }
-
-  Widget roomSelect() {
-    var roomProvider = Provider.of<PathProvider>(context, listen: false);
-
-    return DropdownButton<String>(
-      value: roomProvider.room,
-      onChanged: (String? value) {
-        setState(() {
-          roomProvider.room = value!;
-          print(roomProvider.room);
-        });
-      },
-      items: rooms.map<DropdownMenuItem<String>>((String value) {
-        return DropdownMenuItem<String>(
-          value: value,
-          child: Text(value),
-        );
-      }).toList(),
-    );
   }
 }

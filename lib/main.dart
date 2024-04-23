@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_htl_charts/pages/graph.dart';
 import 'package:flutter_htl_charts/pages/start.dart';
-import 'package:flutter_htl_charts/provider/pathProvider.dart';
+import 'package:flutter_htl_charts/provider/schoolsProvider.dart';
+import 'package:flutter_htl_charts/provider/selectedRoomsProvider.dart';
 import 'package:flutter_htl_charts/provider/urlProvider.dart';
 import 'package:provider/provider.dart';
 
@@ -17,10 +17,13 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(
-          create: (context) => PathProvider(),
+          create: (context) => SelectedRoomProvider(),
         ),
         ChangeNotifierProvider(
           create: (context) => UrlProvider(),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => SchoolsProvider(),
         ),
       ],
       child: MaterialApp(
@@ -30,8 +33,7 @@ class MyApp extends StatelessWidget {
         ),
         initialRoute: '/home',
         routes: {
-          '/home': (context) => Start(),
-          '/graph': (context) => Graph(),
+          '/home': (context) => const Start(),
         },
       ),
     );
