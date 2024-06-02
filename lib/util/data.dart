@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_htl_charts/domain/filterData.dart';
 import 'package:flutter_htl_charts/domain/sensorData.dart';
 import 'package:http/http.dart';
 import 'package:provider/provider.dart';
@@ -77,9 +78,9 @@ class DataFetcher {
   }
 
   static Future<List<SensorData>> getSensorData(
-      BuildContext context, Room room, DateTime dateTime) async {
+      BuildContext context, Room room, FilterData filter) async {
     final url =
-        "${Provider.of<UrlProvider>(context, listen: false).url}/sensorData_2/${room.branch.school.name}/${room.branch.name}/${room.name}/${dateTime.year}/${dateTime.month.toString().padLeft(2, "0")}/${dateTime.day.toString().padLeft(2, "0")}.json";
+        "${Provider.of<UrlProvider>(context, listen: false).url}/sensorData_2/${room.branch.school.name}/${room.branch.name}/${room.name}/${filter.date.year}/${filter.date.month.toString().padLeft(2, "0")}/${filter.date.day.toString().padLeft(2, "0")}.json";
 
     var data = await get(Uri.parse(url));
     var rawData = jsonDecode(data.body) as Map<String, dynamic>;
@@ -90,7 +91,7 @@ class DataFetcher {
       var sensorData = data.value as Map<String, dynamic>;
       var dateSplit = data.key.split(":");
 
-      var time = DateTime(dateTime.year, dateTime.month, dateTime.day,
+      var time = DateTime(filter.date.year, filter.date.month, filter.date.day,
           int.parse(dateSplit[0]), int.parse(dateSplit[1]));
 
       elements.add(SensorData(sensorData["co2"], sensorData["humidity"],

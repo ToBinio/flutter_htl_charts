@@ -106,8 +106,6 @@ class _RoomSelectorState extends State<RoomSelector> {
               width: 150,
               onSelected: (Room? room) async {
                 selectedRoom = room;
-                await room!.fetchData(context);
-
                 widget.callback(room);
 
                 setState(() {});

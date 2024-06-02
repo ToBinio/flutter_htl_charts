@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_htl_charts/domain/filterData.dart';
 import 'package:flutter_htl_charts/provider/schoolsProvider.dart';
 import 'package:flutter_htl_charts/widgets/roomChart.dart';
 import 'package:flutter_htl_charts/widgets/roomSelector.dart';
@@ -26,17 +27,26 @@ class Start extends StatefulWidget {
 class _StartState extends State<Start> {
   List<Room?> selectedRooms = [null];
 
-  bool showTemp = true;
-  bool showCo2 = true;
-  bool showHum = true;
-
   @override
   void initState() {
     var schoolsProver = Provider.of<SchoolsProvider>(context, listen: false);
 
     schoolsProver.loadData(context);
 
+    String currentFormattedDate = formatDate(DateTime.now());
+    formattedDate = currentFormattedDate;
+    dateInput.text = currentFormattedDate;
+
     super.initState();
+  }
+
+  String formattedDate = "";
+  late DateTime date = DateTime.now();
+
+  TextEditingController dateInput = TextEditingController();
+
+  String formatDate(DateTime date) {
+    return "${date.year}-${date.month}-${date.day}";
   }
 
   @override
@@ -50,8 +60,9 @@ class _StartState extends State<Start> {
             for (int i = 0; i < selectedRooms.length; i++)
               Row(
                 children: [
-                  RoomSelector(callback: (room) {
+                  RoomSelector(callback: (room) async {
                     selectedRooms[i] = room;
+                    await updateData();
                     setState(() {});
                   }),
                   if (i != 0)
@@ -61,37 +72,31 @@ class _StartState extends State<Start> {
                 ],
               ),
             IconButton(onPressed: onAddRoom, icon: const Icon(Icons.add)),
-            Row(
-              children: [
-                const Text("Temperatur"),
-                Checkbox(
-                  value: showTemp,
-                  onChanged: (value) => setState(() {
-                    showTemp = value!;
-                  }),
-                ),
-                const Text("CO2"),
-                Checkbox(
-                  value: showCo2,
-                  onChanged: (value) => setState(() {
-                    showCo2 = value!;
-                  }),
-                ),
-                const Text("Humidity"),
-                Checkbox(
-                  value: showHum,
-                  onChanged: (value) => setState(() {
-                    showHum = value!;
-                  }),
-                )
-              ],
-            ),
             RoomChart(
               rooms: selectedRooms,
-              showTemp: showTemp,
-              showCo2: showCo2,
-              showHum: showHum,
-            )
+            ),
+            TextField(
+                controller: dateInput,
+                decoration: const InputDecoration(
+                    icon: Icon(Icons.calendar_today), labelText: "Enter Date"),
+                readOnly: true,
+                onTap: () async {
+                  DateTime? pickedDate = await showDatePicker(
+                    context: context,
+                    initialEntryMode: DatePickerEntryMode.calendarOnly,
+                    initialDate: DateTime.now(),
+                    firstDate: DateTime(1999),
+                    lastDate: DateTime.now(),
+                  );
+                  if (pickedDate != null) {
+                    formattedDate = formatDate(pickedDate);
+                    date = pickedDate;
+                    await updateData();
+                    setState(() {
+                      dateInput.text = formattedDate;
+                    });
+                  }
+                }),
           ],
         ));
   }
@@ -104,5 +109,13 @@ class _StartState extends State<Start> {
   void onRemoveRoom(int id) {
     selectedRooms.removeAt(id);
     setState(() {});
+  }
+
+  Future<void> updateData() async {
+    for (var room in selectedRooms) {
+      if (room != null) {
+        await room.fetchData(context, FilterData(date));
+      }
+    }
   }
 }

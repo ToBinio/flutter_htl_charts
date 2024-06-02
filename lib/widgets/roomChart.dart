@@ -7,16 +7,10 @@ import '../domain/room.dart';
 class RoomChart extends StatefulWidget {
   List<Room?> rooms;
 
-  bool showTemp;
-  bool showHum;
-  bool showCo2;
-
-  RoomChart(
-      {super.key,
-      required this.rooms,
-      required this.showCo2,
-      required this.showHum,
-      required this.showTemp});
+  RoomChart({
+    super.key,
+    required this.rooms,
+  });
 
   @override
   State<RoomChart> createState() => _RoomChartState();
@@ -29,42 +23,41 @@ class _RoomChartState extends State<RoomChart> {
 
     List<CartesianSeries> data = [];
 
-    if (widget.showHum) {
-      for (var room in rooms) {
-        data.add(LineSeries<SensorData, DateTime>(
-            dataSource: room!.data,
-            yAxisName: "YAxisHum",
-            name: 'Series ${room.name} hum',
-            xValueMapper: (SensorData sales, _) => sales.time,
-            yValueMapper: (SensorData sales, _) => sales.humidity));
-      }
+    for (var room in rooms) {
+      data.add(LineSeries<SensorData, DateTime>(
+          dataSource: room!.data,
+          yAxisName: "YAxisHum",
+          name:
+              '${room.branch.school.name} ${room.branch.name} ${room.name} - hum',
+          xValueMapper: (SensorData sales, _) => sales.time,
+          yValueMapper: (SensorData sales, _) => sales.humidity));
     }
 
-    if (widget.showTemp) {
-      for (var room in rooms) {
-        data.add(LineSeries<SensorData, DateTime>(
-            dataSource: room!.data,
-            yAxisName: "YAxisTemp",
-            name: 'Series ${room.name} temp',
-            xValueMapper: (SensorData sales, _) => sales.time,
-            yValueMapper: (SensorData sales, _) => sales.temperature));
-      }
+    for (var room in rooms) {
+      data.add(LineSeries<SensorData, DateTime>(
+          dataSource: room!.data,
+          yAxisName: "YAxisTemp",
+          name:
+              '${room.branch.school.name} ${room.branch.name} ${room.name} - temp',
+          xValueMapper: (SensorData sales, _) => sales.time,
+          yValueMapper: (SensorData sales, _) => sales.temperature));
     }
 
-    if (widget.showCo2) {
-      for (var room in rooms) {
-        data.add(LineSeries<SensorData, DateTime>(
-            dataSource: room!.data,
-            yAxisName: "YAxisCO2",
-            name: 'Series ${room.name} co2',
-            xValueMapper: (SensorData sales, _) => sales.time,
-            yValueMapper: (SensorData sales, _) => sales.co2));
-      }
+    for (var room in rooms) {
+      data.add(LineSeries<SensorData, DateTime>(
+          dataSource: room!.data,
+          yAxisName: "YAxisCO2",
+          name:
+              '${room.branch.school.name} ${room.branch.name} ${room.name} - co2',
+          xValueMapper: (SensorData sales, _) => sales.time,
+          yValueMapper: (SensorData sales, _) => sales.co2));
     }
 
     //todo hiding no working....
     return SfCartesianChart(
         primaryXAxis: const DateTimeAxis(),
+        legend: const Legend(isVisible: true),
+        tooltipBehavior: TooltipBehavior(enable: true),
         axes: const <ChartAxis>[
           NumericAxis(
             name: 'YAxisTemp',
